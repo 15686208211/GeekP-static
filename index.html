@@ -9,8 +9,8 @@
     <meta name="author" content="">
 
     <title>GeekP</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="./bootstrap.min.css">
+<link rel="stylesheet" href="./bootstrap-theme.min.css">
   </head>
 
   <body>
@@ -34,6 +34,7 @@
             </div>
             </div>
           <ul class="nav navbar-nav navbar-right">
+        <li><a style="font-size: 30px" id="FillTime">0:0.0</a></li>
         <li><a style="font-size: 30px" id="LocalTime">0000</a></li>
         <li><a id="CStatic">OFFline</a></li>
       </ul>
@@ -59,11 +60,12 @@
         <p>&copy; <a href="http://philo.top">Philo.top</a> 2015</p>
       </footer>
     </div> <!-- /container -->
-    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script src="./jquery.min.js"></script>
+    <script src="./bootstrap.min.js"></script>
     <script type="text/javascript">
             var runIndex=0;
             var sock = null;
+            var fti = null;// 倒计时interval
             var wsuri = "ws://127.0.0.1:1234";
             var cmdcache = "";
 
@@ -112,6 +114,11 @@
                         res.innerHTML  = "";
                         return;
                     }
+                    if( part[0] == "fill"){
+                        res.innerHTML  = "";
+                        FillTimeStart(parseFloat(part[1]));
+                        return;
+                    }
                     if(part[0]=='set' && part[1]=='wsuri')
                     {
                         wsuri=part[2];
@@ -122,6 +129,7 @@
                         link_start();
                         return;
                     }
+
                     if(CStatic.innerHTML=="OFFline"){
                         output("ERROR: not online");
                     }
@@ -145,6 +153,27 @@
                +myDate.getMinutes().toString()+":"
                +myDate.getSeconds().toString()+"."+
                myDate.getMilliseconds().toString()[0];
+            }
+
+            var FillEndTime=null;
+            function FillTimeIntervalFunction(){
+                now=new Date().getTime();
+                if((now-FillEndTime)>=0){
+                    output("time stop!");
+                    clearInterval(fti);
+                    FillTime.innerHTML='0:0.0';
+                }else{
+                    oo = FillEndTime-now;
+                    FillTime.innerHTML = (oo/60000).toString().split('.')[0]+":"+
+                    ((oo%60000)/1000).toString().split(".")[0]+"."+
+                    ((oo%60000)%1000).toString()[0];
+                }
+            }
+
+            function FillTimeStart(minutes){
+                clearInterval(fti);
+                FillEndTime = new Date().getTime()+60000*minutes;
+                fti = setInterval("FillTimeIntervalFunction()",100);//1000为1秒钟
             }
         </script>
   </body>

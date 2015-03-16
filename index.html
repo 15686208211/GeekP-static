@@ -34,6 +34,7 @@
             </div>
             </div>
           <ul class="nav navbar-nav navbar-right">
+        <li><a style="font-size: 30px" id="LocalTime">0000</a></li>
         <li><a id="CStatic">OFFline</a></li>
       </ul>
         </div><!--/.navbar-collapse -->
@@ -63,7 +64,7 @@
     <script type="text/javascript">
             var runIndex=0;
             var sock = null;
-            var wsuri = "";
+            var wsuri = "ws://127.0.0.1:1234";
             var cmdcache = "";
 
             var link_start = function() {
@@ -75,6 +76,7 @@
                 }
 
                 sock = new WebSocket(wsuri);
+
 
                 sock.onopen = function() {
                     CStatic.innerHTML="ONline"
@@ -130,6 +132,19 @@
 
                     runIndex++;
                 }
+            }
+
+            setInterval("timeInterval()",100);//1000为1秒钟
+            function timeInterval()
+            {
+               var myDate = new Date();
+               LocalTime.innerHTML =
+            //    myDate.getMonth().toString()+"/"+myDate.getDay().toString()+"/"+
+            //    myDate.getFullYear().toString()+" , "+
+               myDate.getHours().toString()+":"
+               +myDate.getMinutes().toString()+":"
+               +myDate.getSeconds().toString()+"."+
+               myDate.getMilliseconds().toString()[0];
             }
         </script>
   </body>

@@ -24,15 +24,16 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" id="PName">GeekP</a>
+          <input  id="cmd" style="width: 500px;margin:6px" placeholder="CMD" type="text" class="form-control">
+          <!-- <a class="navbar-brand" id="PName">GeekP</a> -->
         </div>
         <div id="navbar" class="navbar-collapse collapse">
 
-          <div class="navbar-form navbar-left">
+          <!-- <div class="navbar-form navbar-left">
             <div class="form-group">
-              <input id="cmd" style="width: 500px" placeholder="CMD" type="text" class="form-control">
+              <input style="width: 500px" placeholder="CMD" type="text" class="form-control">
             </div>
-            </div>
+            </div> -->
           <ul class="nav navbar-nav navbar-right">
         <li><a style="font-size: 30px" id="FillTime">0:0.0</a></li>
         <li><a style="font-size: 30px" id="LocalTime">0000</a></li>
@@ -62,12 +63,47 @@
     </div> <!-- /container -->
     <script src="./jquery.min.js"></script>
     <script src="./bootstrap.min.js"></script>
+    <script src="./tripledes.js"></script>
+    <script src="./mode-ecb-min.js"></script>
+    <script src="./pad-zeropadding-min.js"></script>
     <script type="text/javascript">
+
+    function encryptByDES(message, key) {
+    var keyHex = CryptoJS.enc.Utf8.parse(key);
+    var encrypted = CryptoJS.DES.encrypt(message, keyHex, {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.ZeroPadding
+    });
+    return encrypted.toString();
+    }
+    function decryptByDES(ciphertext, key) {
+        var keyHex = CryptoJS.enc.Utf8.parse(key);
+        var decrypted = CryptoJS.DES.decrypt({
+            ciphertext: CryptoJS.enc.Base64.parse(ciphertext)
+        }, keyHex, {
+            mode: CryptoJS.mode.ECB,
+            padding: CryptoJS.pad.ZeroPadding
+        });
+        return decrypted.toString(CryptoJS.enc.Utf8);
+    }
+
+    var message = 't';
+var key = '5e8487e6';
+
+var ciphertext = encryptByDES(message, key);
+// ciphertext: 8dKft9vkZ4I=
+console.info('ciphertext:', ciphertext);
+var plaintext = decryptByDES(ciphertext, key);
+// plaintext : Message
+console.info('plaintext :', plaintext);
+
             var runIndex=0;
             var sock = null;
             var fti = null;// 倒计时interval
             var wsuri = "ws://127.0.0.1:1234";
             var cmdcache = "";
+            var Passphrase="";
+
 
             var link_start = function() {
 
@@ -91,13 +127,14 @@
                 }
 
                 sock.onmessage = function(e) {
-                    output(e.data)
+                    output(decryptByDES(e.data, key))
                     console.log("message received: " + e.data);
                 }
             };
 
             function send() {
-                sock.send(cmdcache);
+                console.log("加密结果：",encryptByDES(cmdcache, key))
+                sock.send(encryptByDES(cmdcache, key));
             };
 
             var output = function(output){
@@ -110,22 +147,22 @@
                     part=cmd.value.split(' ');
                     cmdcache=cmd.value;
                     cmd.value="";
-                    if( part[0] == "clear"){
+                    if( part[0] == "清空"){
                         res.innerHTML  = "";
                         return;
                     }
-                    if( part[0] == "fill"){
+                    if( part[0] == "填坑时间"){
                         res.innerHTML  = "";
                         FillTimeStart(parseFloat(part[1]));
                         return;
                     }
-                    if(part[0]=='set' && part[1]=='wsuri')
+                    if(part[0]=='更新服务器地址')
                     {
                         wsuri=part[2];
-                        output("wsuir set to: "+wsuri);
+                        output("服务器地址更新至: "+wsuri);
                         return;
                     }
-                    if( part[0] == "link" && part[1]=='start'){
+                    if( part[0] == "连接服务器"){
                         link_start();
                         return;
                     }
